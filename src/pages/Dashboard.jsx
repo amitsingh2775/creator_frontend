@@ -5,6 +5,7 @@ import Feed from '../components/Dashboard/Feed';
 import SavedFeeds from '../components/Dashboard/SavedFeeds';
 import AdminPanel from '../components/Dashboard/AdminPanel';
 import Navbar from '../components/Layout/Navbar';
+import { toast } from 'react-toastify';
 
 const Dashboard = () => {
   const [credits, setCredits] = useState(0);
@@ -31,6 +32,7 @@ const Dashboard = () => {
       setIsLoading(true);
       try {
         await Promise.all([
+          checkLoginBonus(),
           fetchCredits(),
           fetchFeeds(),
           fetchSavedFeeds(),
@@ -38,7 +40,7 @@ const Dashboard = () => {
         ]);
       } catch (error) {
         console.error('Error loading data:', error);
-        alert('Error loading data: There was a problem loading your dashboard data');
+        toast.error('Error loading data: There was a problem loading your dashboard data');
       } finally {
         setIsLoading(false);
       }
@@ -46,6 +48,20 @@ const Dashboard = () => {
 
     loadData();
   }, [user]);
+
+  const checkLoginBonus = async () => {
+    try {
+      const res = await api.get('/users/login-bonus');
+      if (res.data.awarded) {
+        setCredits(res.data.credits);
+        toast.success(res.data.message, {
+          icon: '🎉',
+        });
+      }
+    } catch (err) {
+      console.error('Failed to check login bonus', err);
+    }
+  };
 
   const fetchCredits = async () => {
     try {
@@ -100,10 +116,10 @@ const Dashboard = () => {
       setIsAggregating(true);
       const res = await api.get('/feed/aggregate/linkedin');
       await fetchFeeds();
-      alert(`LinkedIn feeds aggregated: ${res.data.message || 'Successfully aggregated LinkedIn feeds'}`);
+      toast.success(res.data.message || 'Successfully aggregated LinkedIn feeds');
     } catch (err) {
       console.error('Failed to aggregate LinkedIn feeds', err);
-      alert('Aggregation failed: Failed to aggregate LinkedIn feeds');
+      toast.error('Aggregation failed: Failed to aggregate LinkedIn feeds');
     } finally {
       setIsAggregating(false);
     }
@@ -198,7 +214,6 @@ const Dashboard = () => {
           </div>
 
           <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-            {/* Left Side: Feed Section (Scrollable) */}
             <div className="lg:col-span-2">
               <div className="overflow-y-auto max-h-[calc(100vh-200px)] scrollbar-thin scrollbar-thumb-gray-300 dark:scrollbar-thumb-gray-600 scrollbar-track-gray-100 dark:scrollbar-track-gray-800">
                 <Feed
@@ -211,8 +226,6 @@ const Dashboard = () => {
                 />
               </div>
             </div>
-
-            {/* Right Side: Saved Feeds and Admin Panel (Scrollable) */}
             <div className="flex flex-col gap-6">
               <div className="overflow-y-auto max-h-[calc(100vh-200px)] scrollbar-thin scrollbar-thumb-gray-300 dark:scrollbar-thumb-gray-600 scrollbar-track-gray-100 dark:scrollbar-track-gray-800">
                 <div className="space-y-6">

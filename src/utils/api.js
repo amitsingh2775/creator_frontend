@@ -1,6 +1,7 @@
 import axios from 'axios';
-
-const API_URL = 'http://localhost:5000/api'; 
+// https://creator-dashboard-360o.onrender.com/api
+// http://localhost:5000/api
+const API_URL = 'https://creator-dashboard-360o.onrender.com/api'; 
 
 const api = axios.create({
   baseURL: API_URL,
